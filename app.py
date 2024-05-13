@@ -25,6 +25,14 @@ s3 = boto3.client(
 )
 bucket_name = os.environ.get('S3_BUCKET_NAME')
 
+# AWS RDS client
+rds_client = boto3.client(
+    'rds',
+    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+    region_name=os.environ.get('AWS_REGION')
+)
+
 class Name(Resource):
     def post(self):
         data = request.get_json()
@@ -48,7 +56,17 @@ class Name(Resource):
 
         return {"message": "Name added successfully"}, 201
 
+class RDSInstances(Resource):
+    def get(self):
+        try:
+            instances = rds_client.describe_db_instances()
+            db_instances = instances['DBInstances']
+            return jsonify(db_instances)
+        except Exception as e:
+            return {"error": str(e)}, 500
+
 api.add_resource(Name, '/name')
+api.add_resource(RDSInstances, '/rds-instances')
 
 if __name__ == '__main__':
     app.run(debug=True)
