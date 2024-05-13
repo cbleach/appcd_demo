@@ -3,22 +3,27 @@ from flask_restful import Api, Resource
 from flaskext.mysql import MySQL
 import boto3
 import json
+import os
 
 app = Flask(__name__)
 api = Api(app)
 
-# MySQL configurations
-app.config['MYSQL_DATABASE_USER'] = 'your_mysql_user'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'your_mysql_password'
-app.config['MYSQL_DATABASE_DB'] = 'your_database'
-app.config['MYSQL_DATABASE_HOST'] = 'your_mysql_host'
+# MySQL configurations using AWS RDS
+app.config['MYSQL_DATABASE_USER'] = os.environ.get('MYSQL_USER')
+app.config['MYSQL_DATABASE_PASSWORD'] = os.environ.get('MYSQL_PASSWORD')
+app.config['MYSQL_DATABASE_DB'] = os.environ.get('MYSQL_DB')
+app.config['MYSQL_DATABASE_HOST'] = os.environ.get('MYSQL_HOST')
 
 mysql = MySQL()
 mysql.init_app(app)
 
 # AWS S3 configurations
-s3 = boto3.client('s3', aws_access_key_id='your_aws_access_key', aws_secret_access_key='your_aws_secret_key')
-bucket_name = 'your_s3_bucket_name'
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
+)
+bucket_name = os.environ.get('S3_BUCKET_NAME')
 
 class Name(Resource):
     def post(self):
